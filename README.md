@@ -32,6 +32,59 @@ This software is not yet published to PyPi. To install, run
 pip install git+https://github.com/apple/ml-sampleplan
 ```
 
+## Command line usage
+
+Installing the package also installs the `sampleplan` command. It exposes the full functionality of the
+library; the main parser selects the method, each method has its own arguments:
+
+```bash
+sampleplan --help
+sampleplan single --help
+```
+
+The distribution is selected with `-d/--distribution` (`binomial` or `hypergeometric`), where
+`--lot-size` is required for the hypergeometric case. Every command accepts `--json` to print a
+machine-readable result instead of plain text.
+
+### Confidence intervals
+
+```bash
+sampleplan ci -d binomial --p0 0.01 --alpha 0.05 --ci-half-width 0.01
+sampleplan ci -d hypergeometric --lot-size 1000 --p0 0.01 --alpha 0.05 --ci-half-width 0.01
+```
+
+Use `--method` to switch between the Clopper-Pearson `exact` interval (default), the `mid-p`
+corrected one and the `agresti-coull` approximation (binomial only).
+
+### Single sampling
+
+```bash
+sampleplan single -d binomial --p-a 0.01 --p-r 0.05 --alpha 0.05 --beta 0.2
+sampleplan single -d hypergeometric --p-a 0.01 --p-r 0.05 --alpha 0.05 --beta 0.2 --lot-size 1000
+```
+
+### Double sampling
+
+```bash
+sampleplan double -d binomial --p-a 0.01 --p-r 0.05 --alpha 0.05 --beta 0.2
+sampleplan double -d hypergeometric --p-a 0.01 --p-r 0.05 --alpha 0.05 --beta 0.2 --lot-size 1000
+```
+
+Besides the plan itself, this prints the average sample size for the full and the curtailed variant.
+Pass `--p` to evaluate them at an error rate other than `--p-a`.
+
+### Sequential sampling
+
+```bash
+sampleplan sequential -d binomial --p-a 0.01 --p-r 0.05 --alpha 0.05 --beta 0.2 --p 0.07
+sampleplan sequential -d hypergeometric --p-a 0.01 --p-r 0.05 --alpha 0.05 --beta 0.2 \
+    --lot-size 1000 --defects 4 --print-limits
+```
+
+The plan is truncated at `--cutoff`, which defaults to three times the single sampling plan sample
+size for the binomial case and to the single sampling plan sample size for the hypergeometric one.
+`--print-limits` additionally prints the acceptance and rejection limits for every step.
+
 ## Usage
 
 The following section describes how to use this package to compute sample sizes for confidence intervals

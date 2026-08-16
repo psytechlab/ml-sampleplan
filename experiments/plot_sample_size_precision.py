@@ -20,8 +20,7 @@ def plot_single(num_instances: int, confidences: list[float], error_rate: float,
             num_errors = round(error_rate * sample_size)
 
             try:
-                cl, cu = hypergeometric_proportion_interval_exact(confidence, num_instances,
-                                                                  sample_size, num_errors)
+                cl, cu = hypergeometric_proportion_interval_exact(confidence, num_instances, sample_size, num_errors)
             except RuntimeError as e:
                 print(e)
                 continue
@@ -72,8 +71,8 @@ def plot_stuff():
     #             plotname="sample_error_5.pdf")
     # plot_single(num_instances=1000, confidences=[0.9, 0.95, 0.99], error_rate=0.1,
     #             plotname="sample_error_10.pdf")
-    plot_single(num_instances=1000, confidences=[0.9, 0.95, 0.99], error_rate=0.25,
-                plotname="sample_error_25.pdf")
+    plot_single(num_instances=1000, confidences=[0.9, 0.95, 0.99], error_rate=0.25, plotname="sample_error_25.pdf")
+
 
 if __name__ == "__main__":
     plot_stuff()

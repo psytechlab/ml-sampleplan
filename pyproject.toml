@@ -6,6 +6,9 @@ authors = ["Jan-Christoph Klie <jklie@apple.com>"]
 license = "Apple Sample Code License"
 readme = "README.md"
 
+[tool.poetry.scripts]
+sampleplan = "sampleplan.cli.main:main"
+
 [tool.poetry.dependencies]
 python = ">=3.10"
 scipy = ">=1.0.0"

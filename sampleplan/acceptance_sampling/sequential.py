@@ -49,10 +49,8 @@ class SequentialSamplingPlanRegion:
         assert len(self.lower_limits) == self.num_trials, (len(self.lower_limits), self.num_trials)
         assert len(self.upper_limits) == self.num_trials, (len(self.upper_limits), self.num_trials)
 
-        self.lower_limits_array = np.array(
-            [x if x is not None else -np.inf for x in self.lower_limits])
-        self.upper_limits_array = np.array(
-            [x if x is not None else np.inf for x in self.upper_limits])
+        self.lower_limits_array = np.array([x if x is not None else -np.inf for x in self.lower_limits])
+        self.upper_limits_array = np.array([x if x is not None else np.inf for x in self.upper_limits])
 
         assert self.lower_limits_array.size == len(self.lower_limits)
         assert self.upper_limits_array.size == len(self.upper_limits)
@@ -73,12 +71,10 @@ class SequentialSamplingPlanRegion:
         t = range(self.num_trials)
 
         plt.plot(
-            t, [e if e is not None else np.nan for e in self.lower_limits], color="k",
-            linestyle="--", linewidth=".75"
+            t, [e if e is not None else np.nan for e in self.lower_limits], color="k", linestyle="--", linewidth=".75"
         )
         plt.plot(
-            t, [e if e is not None else np.nan for e in self.upper_limits], color="k",
-            linestyle="--", linewidth=".75"
+            t, [e if e is not None else np.nan for e in self.upper_limits], color="k", linestyle="--", linewidth=".75"
         )
 
         for n in t:
@@ -195,8 +191,7 @@ class BinomialSequentialSamplingPlan:
             lower_limits.append(lower_bound)
             upper_limits.append(upper_bound)
 
-        return SequentialSamplingPlanRegion(num_trials=num_trials, lower_limits=lower_limits,
-                                            upper_limits=upper_limits)
+        return SequentialSamplingPlanRegion(num_trials=num_trials, lower_limits=lower_limits, upper_limits=upper_limits)
 
     def compute_boundaries(self, n: int) -> tuple[int, int]:
         lower_bound = -self.h1 + self.s * n
@@ -239,8 +234,8 @@ class BinomialSequentialSamplingPlan:
         theta = root_scalar(_fn, x0=-1, x1=1).root
 
         # Probability of acceptance
-        p_a_1 = b.upper_bound ** theta
-        p_a_2 = b.lower_bound ** theta
+        p_a_1 = b.upper_bound**theta
+        p_a_2 = b.lower_bound**theta
         p_a = (p_a_1 - 1) / (p_a_1 - p_a_2)
 
         assert 0 <= p_a <= 1, p_a
@@ -258,14 +253,12 @@ class BinomialSequentialSamplingPlan:
     def average_sample_with_cutoff(self, p: float, cutoff: int) -> float:
         bounds = self.compute_region(cutoff)
 
-        asn = self._average_sample_number_fast(cutoff, p, bounds.lower_limits_array,
-                                               bounds.upper_limits_array)
+        asn = self._average_sample_number_fast(cutoff, p, bounds.lower_limits_array, bounds.upper_limits_array)
 
         return asn[-1]
 
     @staticmethod
-    def _average_sample_number_fast(cutoff: int, p: float, lower_limits: np.ndarray,
-                                    upper_limits: np.ndarray):
+    def _average_sample_number_fast(cutoff: int, p: float, lower_limits: np.ndarray, upper_limits: np.ndarray):
         # Implements "Aronian, 1968, Sequential Analysis, Direct Method" as described in
         # "Meeker, Sequential Tests of the Hypergeometric Distribution, 1975"
         # We adapt the part where P[n, x] and P[n, x-1] to using the binomial distribution
@@ -393,14 +386,12 @@ class HypergeometricSequentialSamplingPlan:
         from sampleplan.acceptance_sampling import SingleSamplingPlan
 
         plan = SingleSamplingPlan.hypergeometric(
-            self._p1, self._p2, alpha=self._boundaries.alpha, beta=self._boundaries.beta,
-            lot_size=self._lot_size
+            self._p1, self._p2, alpha=self._boundaries.alpha, beta=self._boundaries.beta, lot_size=self._lot_size
         )
 
         return plan.n
 
-    def compute_truncated_wald_region(self, cutoff: Optional[
-        int] = None) -> SequentialSamplingPlanRegion:
+    def compute_truncated_wald_region(self, cutoff: Optional[int] = None) -> SequentialSamplingPlanRegion:
         if cutoff is None:
             cutoff = self._lot_size
 
@@ -448,14 +439,11 @@ class HypergeometricSequentialSamplingPlan:
 
         return region
 
-    def average_sample_number(self, d: int,
-                              cutoff: Optional[int] = None) -> SequentialSamplingPlanProperties:
+    def average_sample_number(self, d: int, cutoff: Optional[int] = None) -> SequentialSamplingPlanProperties:
         # Implements "Aronian, 1968, Sequential Analysis, Direct Method" as described in
         # "Meeker, Sequential Tests of the Hypergeometric Distribution, 1975"
 
-        assert int(
-            d) == d, ("d is not a float, we need to pass number of defects, NOT the probability "
-                      "here!")
+        assert int(d) == d, "d is not a float, we need to pass number of defects, NOT the probability " "here!"
 
         if cutoff is None:
             cutoff = self._lot_size
@@ -465,8 +453,7 @@ class HypergeometricSequentialSamplingPlan:
         num_trials = cutoff + 1
 
         P, A0, A1, asn = self._average_sample_number_fast(
-            num_trials, self._lot_size, d, cutoff, region.lower_limits_array,
-            region.upper_limits_array
+            num_trials, self._lot_size, d, cutoff, region.lower_limits_array, region.upper_limits_array
         )
 
         props = SequentialSamplingPlanProperties(
@@ -483,8 +470,7 @@ class HypergeometricSequentialSamplingPlan:
 
     @staticmethod
     def _average_sample_number_fast(
-            num_trials: int, lot_size: int, d: int, cutoff: int, lower_limits: np.ndarray,
-            upper_limits: np.ndarray
+        num_trials: int, lot_size: int, d: int, cutoff: int, lower_limits: np.ndarray, upper_limits: np.ndarray
     ):
         # trials x defects
         P = np.zeros((num_trials, num_trials))
