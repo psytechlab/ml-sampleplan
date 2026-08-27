@@ -135,6 +135,14 @@ def test_sequential_hypergeometric_requires_defects():
     assert e.value.code == 2
 
 
+def test_hypergeometric_lot_size_error_keeps_cli_flag(capsys):
+    with pytest.raises(SystemExit) as e:
+        main(["single", "-d", "hypergeometric", "--p-a", "0.01", "--p-r", "0.05"])
+
+    assert e.value.code == 2
+    assert "--lot-size is required" in capsys.readouterr().err
+
+
 def test_plain_text_output(capsys):
     assert main(["single", "-d", "binomial"] + BINOMIAL_PLAN_ARGS) == 0
 

@@ -1,8 +1,6 @@
 import argparse
 
-from sampleplan.acceptance_sampling import DoubleSamplingPlan
 from sampleplan.cli.common import (
-    BINOMIAL,
     add_distribution_arg,
     add_lot_size_arg,
     add_output_args,
@@ -11,8 +9,8 @@ from sampleplan.cli.common import (
     emit,
     positive_int,
     probability,
-    require_lot_size,
 )
+from sampleplan.service import DEFAULT_LIMIT, compute_double
 
 
 def register(subparsers):
@@ -43,7 +41,7 @@ def register(subparsers):
     parser.add_argument(
         "--limit",
         type=positive_int,
-        default=100_000,
+        default=DEFAULT_LIMIT,
         help="Largest sample size to search for, binomial only (default: %(default)s)",
     )
     add_output_args(parser)
@@ -54,37 +52,24 @@ def register(subparsers):
 
 
 def run(args: argparse.Namespace):
-    lot_size = require_lot_size(args)
+    payload = compute_double(
+        distribution=args.distribution,
+        p_a=args.p_a,
+        p_r=args.p_r,
+        alpha=args.alpha,
+        beta=args.beta,
+        lot_size=args.lot_size,
+        ratio=args.ratio,
+        p=args.p,
+        limit=args.limit,
+    )
 
-    if args.distribution == BINOMIAL:
-        plan = DoubleSamplingPlan.binomial(args.p_a, args.p_r, args.alpha, args.beta, args.ratio, args.limit)
-    else:
-        plan = DoubleSamplingPlan.hypergeometric(args.p_a, args.p_r, args.alpha, args.beta, lot_size, args.ratio)
-
-    p = args.p if args.p is not None else args.p_a
-    asn = plan.average_sample_size(p)
-    asn_curtailed = plan.average_sample_size_curtailed(p)
-
-    payload = {
-        "command": "double",
-        "distribution": args.distribution,
-        "p_a": args.p_a,
-        "p_r": args.p_r,
-        "alpha": args.alpha,
-        "beta": args.beta,
-        "lot_size": lot_size,
-        "p": p,
-        "n": plan.n,
-        "c1": plan.c1,
-        "c2": plan.c2,
-        "r": plan.r,
-        "average_sample_size": asn,
-        "average_sample_size_curtailed": asn_curtailed,
-    }
+    n, r = payload["n"], payload["r"]
 
     lines = [
-        f"Double Sampling Plan {args.distribution}: n1={plan.n}, n2={plan.n * plan.r}, c1={plan.c1}, c2={plan.c2}",
-        f"Average sample size at p={p}: full={asn:.4f}, curtailed={asn_curtailed:.4f}",
+        f"Double Sampling Plan {payload['distribution']}: n1={n}, n2={n * r}, c1={payload['c1']}, c2={payload['c2']}",
+        f"Average sample size at p={payload['p']}: full={payload['average_sample_size']:.4f}, "
+        f"curtailed={payload['average_sample_size_curtailed']:.4f}",
     ]
 
     emit(payload, lines, args.json)

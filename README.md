@@ -85,6 +85,56 @@ The plan is truncated at `--cutoff`, which defaults to three times the single sa
 size for the binomial case and to the single sampling plan sample size for the hypergeometric one.
 `--print-limits` additionally prints the acceptance and rejection limits for every step.
 
+## Web UI and API
+
+Install the optional web dependencies and start the server:
+
+```bash
+pip install ".[web]"
+sampleplan-web
+```
+
+The calculator is available at [http://localhost:8000](http://localhost:8000), and the interactive
+Swagger documentation is at [http://localhost:8000/docs](http://localhost:8000/docs). The host and
+port can be changed with `SAMPLEPLAN_HOST` and `SAMPLEPLAN_PORT`.
+
+To keep public API requests bounded, lot size, binomial search limit, double-sampling ratio and
+sequential cutoff have safe defaults. Operators can tune them with `SAMPLEPLAN_MAX_LOT_SIZE`,
+`SAMPLEPLAN_MAX_SEARCH_LIMIT`, `SAMPLEPLAN_MAX_DOUBLE_RATIO` and `SAMPLEPLAN_MAX_SEQUENTIAL_CUTOFF`
+respectively.
+
+Each CLI calculation has a matching JSON endpoint:
+
+| CLI command | REST endpoint |
+| --- | --- |
+| `sampleplan ci` | `POST /api/ci` |
+| `sampleplan single` | `POST /api/single` |
+| `sampleplan double` | `POST /api/double` |
+| `sampleplan sequential` | `POST /api/sequential` |
+
+For example:
+
+```bash
+curl http://localhost:8000/api/single \
+  -H 'content-type: application/json' \
+  -d '{"distribution":"binomial","p_a":0.01,"p_r":0.05}'
+```
+
+To build and run the container locally:
+
+```bash
+docker build -t sampleplan .
+docker run --rm -p 8000:8000 sampleplan
+# Or:
+docker compose up
+```
+
+Published images from `main` can be run directly from GitHub Container Registry:
+
+```bash
+docker run --rm -p 8000:8000 ghcr.io/psytechlab/ml-sampleplan:latest
+```
+
 ## Usage
 
 The following section describes how to use this package to compute sample sizes for confidence intervals
@@ -271,4 +321,3 @@ which should be run before every commit.
 You can run the tests via
 
     make test
-

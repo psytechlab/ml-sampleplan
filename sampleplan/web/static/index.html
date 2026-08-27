@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>sampleplan</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">Statistical quality control</p>
+          <h1>sampleplan</h1>
+          <p>Calculate sample sizes and acceptance sampling plans.</p>
+        </div>
+        <a class="docs-link" href="/docs">API documentation</a>
+      </header>
+
+      <section class="panel">
+        <label for="method">Calculation</label>
+        <select id="method" aria-label="Calculation method"></select>
+        <form id="calculator-form">
+          <div id="fields" class="fields"></div>
+          <p id="error" class="error" role="alert" hidden></p>
+          <button type="submit">Calculate</button>
+        </form>
+      </section>
+
+      <section id="result" class="panel result" aria-live="polite" hidden>
+        <h2>Result</h2>
+        <div id="summary" class="summary"></div>
+        <div id="limits"></div>
+        <details>
+          <summary>Full JSON response</summary>
+          <pre id="json-result"></pre>
+        </details>
+      </section>
+    </main>
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>
