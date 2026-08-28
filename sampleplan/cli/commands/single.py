@@ -1,8 +1,6 @@
 import argparse
 
-from sampleplan.acceptance_sampling import SingleSamplingPlan
 from sampleplan.cli.common import (
-    BINOMIAL,
     add_distribution_arg,
     add_lot_size_arg,
     add_output_args,
@@ -10,8 +8,8 @@ from sampleplan.cli.common import (
     add_risk_args,
     emit,
     positive_int,
-    require_lot_size,
 )
+from sampleplan.service import DEFAULT_LIMIT, compute_single
 
 
 def register(subparsers):
@@ -29,7 +27,7 @@ def register(subparsers):
     parser.add_argument(
         "--limit",
         type=positive_int,
-        default=100_000,
+        default=DEFAULT_LIMIT,
         help="Largest sample size to search for, binomial only (default: %(default)s)",
     )
     add_output_args(parser)
@@ -39,29 +37,17 @@ def register(subparsers):
     return parser
 
 
-def build_plan(args: argparse.Namespace, lot_size) -> SingleSamplingPlan:
-    if args.distribution == BINOMIAL:
-        return SingleSamplingPlan.binomial(args.p_a, args.p_r, args.alpha, args.beta, args.limit)
-
-    return SingleSamplingPlan.hypergeometric(args.p_a, args.p_r, args.alpha, args.beta, lot_size)
-
-
 def run(args: argparse.Namespace):
-    lot_size = require_lot_size(args)
-    plan = build_plan(args, lot_size)
+    payload = compute_single(
+        distribution=args.distribution,
+        p_a=args.p_a,
+        p_r=args.p_r,
+        alpha=args.alpha,
+        beta=args.beta,
+        lot_size=args.lot_size,
+        limit=args.limit,
+    )
 
-    payload = {
-        "command": "single",
-        "distribution": args.distribution,
-        "p_a": args.p_a,
-        "p_r": args.p_r,
-        "alpha": args.alpha,
-        "beta": args.beta,
-        "lot_size": lot_size,
-        "n": plan.n,
-        "c": plan.c,
-    }
-
-    lines = [f"Single Sampling Plan {args.distribution}: n={plan.n}, c={plan.c}"]
+    lines = [f"Single Sampling Plan {payload['distribution']}: n={payload['n']}, c={payload['c']}"]
 
     emit(payload, lines, args.json)

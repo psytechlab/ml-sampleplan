@@ -1,28 +1,14 @@
 import argparse
 
 from sampleplan.cli.common import (
-    BINOMIAL,
-    HYPERGEOMETRIC,
-    CliError,
     add_distribution_arg,
     add_lot_size_arg,
     add_output_args,
     add_risk_args,
     emit,
     probability,
-    require_lot_size,
 )
-from sampleplan.confidence_interval import (
-    sample_size_agresti_coull_binomial,
-    sample_size_exact_binomial,
-    sample_size_exact_hypergeometric,
-    sample_size_exact_mid_point_binomial,
-    sample_size_exact_mid_point_hypergeometric,
-)
-
-EXACT = "exact"
-MID_P = "mid-p"
-AGRESTI_COULL = "agresti-coull"
+from sampleplan.service import CI_METHODS, EXACT, compute_ci
 
 
 def register(subparsers):
@@ -45,7 +31,7 @@ def register(subparsers):
     add_lot_size_arg(parser)
     parser.add_argument(
         "--method",
-        choices=[EXACT, MID_P, AGRESTI_COULL],
+        choices=list(CI_METHODS),
         default=EXACT,
         help="Clopper-Pearson exact, exact with mid-P correction or the Agresti-Coull "
         "approximation (default: %(default)s)",
@@ -58,35 +44,15 @@ def register(subparsers):
 
 
 def run(args: argparse.Namespace):
-    lot_size = require_lot_size(args)
+    payload = compute_ci(
+        distribution=args.distribution,
+        p0=args.p0,
+        ci_half_width=args.ci_half_width,
+        alpha=args.alpha,
+        lot_size=args.lot_size,
+        method=args.method,
+    )
 
-    if args.method == EXACT:
-        if args.distribution == BINOMIAL:
-            n = sample_size_exact_binomial(args.p0, args.alpha, args.ci_half_width)
-        else:
-            n = sample_size_exact_hypergeometric(lot_size, args.p0, args.alpha, args.ci_half_width)
-    elif args.method == MID_P:
-        if args.distribution == BINOMIAL:
-            n = sample_size_exact_mid_point_binomial(args.p0, args.alpha, args.ci_half_width)
-        else:
-            n = sample_size_exact_mid_point_hypergeometric(lot_size, args.p0, args.alpha, args.ci_half_width)
-    else:
-        if args.distribution == HYPERGEOMETRIC:
-            raise CliError(f"--method {AGRESTI_COULL} is only implemented for the binomial distribution")
-
-        n = sample_size_agresti_coull_binomial(args.p0, args.alpha, args.ci_half_width)
-
-    payload = {
-        "command": "ci",
-        "distribution": args.distribution,
-        "method": args.method,
-        "p0": args.p0,
-        "alpha": args.alpha,
-        "ci_half_width": args.ci_half_width,
-        "lot_size": lot_size,
-        "n": n,
-    }
-
-    lines = [f"Confidence interval sample size ({args.distribution}, {args.method}): n={n}"]
+    lines = [f"Confidence interval sample size ({payload['distribution']}, {payload['method']}): n={payload['n']}"]
 
     emit(payload, lines, args.json)

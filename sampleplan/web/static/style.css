@@ -1,0 +1,86 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #17221d;
+  background: #edf2ee;
+}
+
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+body { margin: 0; }
+
+main {
+  width: min(960px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 3rem 0 5rem;
+}
+
+header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+h1, h2, p { margin-top: 0; }
+h1 { margin-bottom: 0.35rem; font-size: clamp(2.5rem, 8vw, 4.5rem); letter-spacing: -0.06em; }
+h2 { margin-bottom: 1.25rem; }
+.eyebrow { margin-bottom: 0.35rem; color: #327257; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; }
+.docs-link { color: #17553c; font-weight: 700; white-space: nowrap; }
+
+.panel {
+  margin-top: 1.25rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border: 1px solid #cbd8cf;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 12px 35px rgb(26 63 45 / 8%);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0;
+}
+
+.field { display: flex; flex-direction: column; gap: 0.35rem; }
+.field.checkbox { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; align-items: center; }
+.field.checkbox small { width: 100%; }
+label { font-weight: 650; }
+small { color: #607067; line-height: 1.35; }
+
+input, select, button {
+  min-height: 44px;
+  border: 1px solid #aabbb0;
+  border-radius: 9px;
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+  background: #fff;
+}
+
+input[type="checkbox"] { min-height: auto; width: 1.1rem; height: 1.1rem; }
+button { border-color: #17553c; padding-inline: 1.4rem; color: #fff; background: #17553c; font-weight: 750; cursor: pointer; }
+button:hover { background: #0f422e; }
+button:disabled { cursor: wait; opacity: 0.7; }
+
+.error { margin: 0 0 1rem; padding: 0.75rem; border-radius: 8px; color: #8b1e1e; background: #fff0ef; }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; }
+.summary div { padding: 1rem; border-radius: 10px; background: #edf6f0; }
+.summary span, .summary strong { display: block; }
+.summary span { color: #53645a; font-size: 0.82rem; text-transform: uppercase; }
+.summary strong { margin-top: 0.25rem; font-size: 1.55rem; }
+details { margin-top: 1.5rem; }
+pre { overflow: auto; padding: 1rem; border-radius: 8px; color: #eef8f1; background: #17221d; }
+table { width: 100%; margin-top: 1.5rem; border-collapse: collapse; }
+th, td { padding: 0.55rem; border-bottom: 1px solid #d9e2dc; text-align: left; }
+
+@media (max-width: 640px) {
+  main { padding-top: 1.5rem; }
+  header { display: block; }
+  .docs-link { display: inline-block; margin-top: 0.5rem; }
+  .fields { grid-template-columns: 1fr; }
+}

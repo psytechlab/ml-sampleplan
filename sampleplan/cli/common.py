@@ -1,17 +1,10 @@
 import argparse
 import json
-from typing import Any, Callable, Dict, List, Optional, TypeVar
+from typing import Any, Callable, Dict, List, TypeVar
 
-import numpy as np
-
-BINOMIAL = "binomial"
-HYPERGEOMETRIC = "hypergeometric"
+from sampleplan.service import BINOMIAL, DEFAULT_ALPHA, DEFAULT_BETA, HYPERGEOMETRIC
 
 T = TypeVar("T", int, float)
-
-
-class CliError(Exception):
-    """Raised for user-facing errors that should abort the command with a clean message."""
 
 
 def bounded(
@@ -62,7 +55,7 @@ def add_risk_args(parser: argparse.ArgumentParser, with_beta: bool = True):
     parser.add_argument(
         "--alpha",
         type=probability,
-        default=0.05,
+        default=DEFAULT_ALPHA,
         help="Producer's risk: rejecting a lot that should have been accepted (default: %(default)s)",
     )
 
@@ -70,7 +63,7 @@ def add_risk_args(parser: argparse.ArgumentParser, with_beta: bool = True):
         parser.add_argument(
             "--beta",
             type=probability,
-            default=0.2,
+            default=DEFAULT_BETA,
             help="Consumer's risk: accepting a lot that should have been rejected (default: %(default)s)",
         )
 
@@ -94,24 +87,9 @@ def add_output_args(parser: argparse.ArgumentParser):
     parser.add_argument("--json", action="store_true", help="Print the result as JSON instead of plain text")
 
 
-def require_lot_size(args: argparse.Namespace) -> Optional[int]:
-    if args.distribution == HYPERGEOMETRIC and args.lot_size is None:
-        raise CliError("--lot-size is required for the hypergeometric distribution")
-
-    return args.lot_size
-
-
-def _json_default(value: Any) -> Any:
-    # The plans compute with numpy, whose scalar types json does not know about
-    if isinstance(value, np.generic):
-        return value.item()
-
-    raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
-
-
 def emit(payload: Dict[str, Any], lines: List[str], as_json: bool):
     if as_json:
-        print(json.dumps(payload, indent=2, default=_json_default))
+        print(json.dumps(payload, indent=2))
     else:
         for line in lines:
             print(line)

@@ -43,7 +43,7 @@ jobs:
         run: pipx install poetry
 
       - name: Install dependencies
-        run: poetry install --without paper
+        run: poetry install --without paper --extras web
 
       - name: Run tests
         run: poetry run python -m pytest tests
@@ -53,3 +53,19 @@ jobs:
           poetry run sampleplan --help
           poetry run sampleplan ci -d binomial --p0 0.01 --alpha 0.05 --ci-half-width 0.01
           poetry run sampleplan single -d binomial --p-a 0.01 --p-r 0.05
+
+      - name: Smoke test the web server
+        run: |
+          poetry run sampleplan-web > /tmp/sampleplan-web.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          curl --fail --retry 10 --retry-delay 1 --retry-connrefused http://127.0.0.1:8000/api/health || {
+            cat /tmp/sampleplan-web.log
+            exit 1
+          }
+          curl --fail http://127.0.0.1:8000/api/single \
+            -H 'content-type: application/json' \
+            -d '{"distribution":"binomial","p_a":0.01,"p_r":0.05}' || {
+            cat /tmp/sampleplan-web.log
+            exit 1
+          }

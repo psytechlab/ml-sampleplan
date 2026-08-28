@@ -4,7 +4,7 @@ from importlib.metadata import PackageNotFoundError, version
 from typing import List, Optional
 
 from sampleplan.cli.commands import ci, double, sequential, single
-from sampleplan.cli.common import CliError
+from sampleplan.service import SamplePlanError
 
 COMMANDS = [ci, single, double, sequential]
 
@@ -51,7 +51,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     try:
         args.func(args)
-    except (CliError, ValueError, AssertionError) as e:
+    except SamplePlanError as e:
         parser.exit(2, f"{parser.prog} {args.command}: error: {e}\n")
 
     return 0
